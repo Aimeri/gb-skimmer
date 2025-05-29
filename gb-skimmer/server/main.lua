@@ -37,13 +37,19 @@ RegisterServerEvent("skimmer:claim", function(coords)
     if not Player then return end
 
     local reward = math.random(Config.Reward.min, Config.Reward.max)
-    Player.Functions.AddItem("markedbills", 1, false, { worth = reward })
-    TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["markedbills"], "add")
-    TriggerClientEvent("QBCore:Notify", src, "You pulled the skimmer and got marked bills.", "success")
+
+    if Config.RewardCurrency == 'markedbills' then
+        Player.Functions.AddItem("markedbills", 1, false, { worth = reward })
+        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["markedbills"], "add")
+        TriggerClientEvent("QBCore:Notify", src, "You pulled the skimmer and got marked bills.", "success")
+    elseif Config.RewardCurrency == 'black_money' then
+        Player.Functions.AddMoney("black_money", reward, false)
+        TriggerClientEvent("QBCore:Notify", src, "You pulled the skimmer and got black money.", "success")
+    end
 
     if math.random(1, 100) <= Config.PoliceAlertChance then
         for _, id in ipairs(QBCore.Functions.GetPlayers()) do
-            local cop = QBCore.Functions.GetPlayer(id)
+        local cop = QBCore.Functions.GetPlayer(id)
             if cop and cop.PlayerData.job and Config.PoliceJobs[cop.PlayerData.job.name] then
                 TriggerClientEvent("police:client:policeAlert", id, {
                     title = "Suspicious Activity",
