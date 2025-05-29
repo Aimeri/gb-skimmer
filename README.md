@@ -26,7 +26,7 @@ https://streamable.com/vnp0b9
 
 ```lua
 skimmer = { name = 'skimmer', label = 'Card Skimmer', weight = 200, type = 'item', image = 'skimmer.png', unique = true, useable = false, shouldClose = true, combinable = nil, description = 'A suspicious device that fits in an ATM slot.' },
-
+```
 
 Put the skimmer.png inside of qb-inventory/html/images
 
