@@ -22,16 +22,15 @@ https://streamable.com/vnp0b9
 
 ## Setup
 
-### 1. Add the item to `qb-core/shared/items.lua`
+1. Add the item to `qb-core/shared/items.lua`
 
 ```lua
 skimmer = { name = 'skimmer', label = 'Card Skimmer', weight = 200, type = 'item', image = 'skimmer.png', unique = true, useable = false, shouldClose = true, combinable = nil, description = 'A suspicious device that fits in an ATM slot.' },
 ```
 
-Put the skimmer.png inside of qb-inventory/html/images
+2. Put the skimmer.png inside of qb-inventory/html/images
 
-
-Start the server.
+3. Start the server.
 
 
 
