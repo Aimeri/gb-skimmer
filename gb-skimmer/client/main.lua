@@ -4,31 +4,35 @@ local cooldowns = {
     placing = false,
     retrieving = false
 }
+local skimmerTimerActive = false
 
 CreateThread(function()
-    local model = `s_m_y_dealer_01`
-    RequestModel(model)
-    while not HasModelLoaded(model) do Wait(0) end
+    if Config.NPCShop then
 
-    local coords = vector4(489.1, -1521.77, 29.29, 133.15)
-    local ped = CreatePed(0, model, coords.x, coords.y, coords.z - 1.0, coords.w, false, true)
-    SetEntityAsMissionEntity(ped, true, true)
-    FreezeEntityPosition(ped, true)
-    SetEntityInvincible(ped, true)
-    SetBlockingOfNonTemporaryEvents(ped, true)
+        local model = Config.Npc.model
+        RequestModel(model)
+        while not HasModelLoaded(model) do Wait(0) end
 
-    exports['qb-target']:AddTargetEntity(ped, {
-        options = {
-            {
-                label = 'Buy Skimmer ($2500)',
-                icon = 'fas fa-credit-card',
-                action = function()
-                    TriggerEvent("skimmer:buyMenu")
-                end
-            }
-        },
-        distance = 2.5
-    })
+        local coords = Config.Npc.coords
+        local ped = CreatePed(0, model, coords.x, coords.y, coords.z - 1.0, coords.w, false, true)
+        SetEntityAsMissionEntity(ped, true, true)
+        FreezeEntityPosition(ped, true)
+        SetEntityInvincible(ped, true)
+        SetBlockingOfNonTemporaryEvents(ped, true)
+
+        exports['qb-target']:AddTargetEntity(ped, {
+            options = {
+                {
+                    label = 'Buy Skimmer ($2500)',
+                    icon = 'fas fa-credit-card',
+                    action = function()
+                        TriggerEvent("skimmer:buyMenu")
+                    end
+                }
+            },
+            distance = 2.5
+        })
+    end
 end)
 
 exports['qb-target']:AddTargetModel({
@@ -121,7 +125,7 @@ RegisterNetEvent("skimmer:placeSkimmer", function(entity, pos, key)
     }, {}, {}, function()
         TriggerServerEvent("skimmer:removeItem")
         placedSkimmers[key] = { time = GetGameTimer() }
-        QBCore.Functions.Notify("Skimmer placed.", "success")
+        QBCore.Functions.Notify("Skimmer placed! Wait "..(Config.SkimmerUseTime / 60000).." minutes.", "success")
     end)
 end)
 
@@ -147,3 +151,38 @@ end)
 function getKey(pos)
     return string.format("%d_%d_%d", math.floor(pos.x), math.floor(pos.y), math.floor(pos.z))
 end
+
+CreateThread(function()
+    while true do
+        Wait(1000)
+
+        local foundSkimmer = false
+
+        for key, skimmer in pairs(placedSkimmers) do
+            local elapsed = GetGameTimer() - skimmer.time
+            local remaining = Config.SkimmerUseTime - elapsed
+
+            if remaining > 0 then
+                foundSkimmer = true
+                local secondsLeft = math.floor(remaining / 1000)
+
+                SendNUIMessage({
+                    type = "skimmerTimer",
+                    show = true,
+                    time = secondsLeft
+                })
+            else
+                placedSkimmers[key] = nil
+            end
+        end
+
+        if not foundSkimmer and skimmerTimerActive then
+            SendNUIMessage({
+                type = "skimmerTimer",
+                show = false
+            })
+        end
+
+        skimmerTimerActive = foundSkimmer
+    end
+end)
